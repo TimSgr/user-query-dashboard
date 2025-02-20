@@ -1,128 +1,17 @@
 <?php
-// DB Zugangsdaten
-$servername = "db";
-$username = "root";
-$password = "password";
-$database = "userdata";
 
-// Initiales Datenbank testing
-$conn = new mysqli($servername, $username, $password, $database);
-$conn->set_charset("utf8mb4");
-if ($conn->connect_error) {
-    die("Datenbankverbindung fehlgeschlagen: " . $conn->connect_error);
-}
-
-create_latest_search_table($conn);
-$per_page = 50;
-
-
-// Optionale SQL Queries
-$most_searched_query = execute_query($conn, "
-SELECT search 
-FROM streetsearch_log 
-GROUP BY search 
-ORDER BY COUNT(*) 
-DESC LIMIT 1", true);
-
-$most_searched_query_amount = execute_query($conn, "
-SELECT COUNT(*) 
-AS total 
-FROM streetsearch_log 
-GROUP BY search 
-ORDER BY COUNT(*) 
-DESC LIMIT 1", true);
-
-$most_searched_query_amount = execute_query($conn, "
-SELECT COUNT(*) 
-AS total 
-FROM streetsearch_log 
-GROUP BY search 
-ORDER BY COUNT(*) 
-DESC LIMIT 1", true);
-
-// Haupt SQL Anfrage um Daten in der Tabelle verfügbar zu machen
-$searches = execute_query($conn, "
-SELECT * 
-FROM latest_streetsearch 
-AS s1 
-ORDER BY ts DESC
-LIMIT " . (int)$per_page);
-
-// SQL Anfrage um Gesamtzahl der session ids zu bekommen
-$total_sessions = execute_query($conn, "
-SELECT COUNT(*) 
-AS total 
-FROM latest_streetsearch
-", true);
-
-// SQL Anfrage um gesamtzahl der queries zu bekommen
-$total_searches = execute_query($conn, "
-SELECT COUNT(*) 
-AS total 
-FROM streetsearch_log
-", true);
-
-// Pagination Variables
-$current_page = 1;
-$total_pages = ceil($total_sessions / $per_page);
-$offset = ($current_page - 1) * $per_page;
-
-// Funktion um eine neue Tabelle zu erstellen für die latest query strings bei der suche
-function create_latest_search_table($conn)
-{
-    $db_action = $conn->prepare("
-    CREATE TABLE IF NOT EXISTS latest_streetsearch AS 
-    SELECT s1.sid, s1.search, s1.ts 
-    FROM streetsearch_log AS s1
-    JOIN (
-        SELECT sid, MAX(ts) AS max_ts
-        FROM streetsearch_log
-        GROUP BY sid
-    ) AS latest ON s1.sid = latest.sid AND s1.ts = latest.max_ts;
-    ");
-    $db_action->execute();
-}
-
-// Funktion um prepare und execute Funktionen einfacher auzuführen
-function execute_query($mysql_connection, $query, $single_value = false)
-{
-    $stmt = $mysql_connection->prepare($query);
-
-    if (!$stmt) {
-        error_log("SQL-Fehler: bei prepare(): " . $mysql_connection->error);
-        return $single_value ? null : [];
-    }
-
-    if (!$stmt->execute()) {
-        error_log("SQL-Fehler: bei SQL execute(): " . $stmt->error);
-        return $single_value ? null : [];
-    }
-
-    $result = $stmt->get_result();
-
-    if (!$result) {
-        error_log("SQL-Fehler: Kein gültiges Result");
-        return $single_value ? null : [];
-    }
-
-    if ($single_value) {
-        $row = $result->fetch_assoc();
-        return $row ? reset($row) : null;
-    }
-
-    $data = [];
-    while ($row = $result->fetch_assoc()) {
-        $data[] = $row;
-    }
-
-    return $data;
+$database_file = "database_connection.php";
+if(!file_exists($database_file)){
+    die;
+}else{
+    require_once $database_file;
 }
 
 function render_single_search_result($session_id, $search_query, $timestamp){
     ob_start();
     ?>
     <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200">
-        <td class="px-6 py-4">
+        <td class="px-6 py-4 sessionID">
             <?php echo htmlspecialchars($session_id) ?>
         </td>
         <td class="px-6 py-4">
@@ -143,8 +32,6 @@ function render_single_search_result($session_id, $search_query, $timestamp){
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Suchstatistik</title>
-    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
-    <script src="/assets/js/main.js"></script>
 </head>
 <body>
     <div class="general_data flex gap-4">
@@ -202,6 +89,9 @@ function render_single_search_result($session_id, $search_query, $timestamp){
     }
     echo "</div>";
     ?>
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="/assets/js/main.js"></script>
 </body>
 </html>
 <?php
