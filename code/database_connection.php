@@ -70,6 +70,7 @@ function all_queries_for_user($conn, $sessionID){
         SELECT *  
         FROM streetsearch_log 
         WHERE sid = ?
+        ORDER BY ts DESC
     ");
     if (!$stmt) {
         error_log("SQL-Fehler bei prepare(): " . $conn->error);
@@ -101,17 +102,25 @@ $offset = ($current_page - 1) * $per_page;
 // Funktion um eine neue Tabelle zu erstellen für die latest query strings bei der suche
 function create_latest_search_table($conn)
 {
-    $db_action = $conn->prepare("
-    CREATE TABLE IF NOT EXISTS latest_streetsearch AS 
-    SELECT s1.sid, s1.search, s1.ts 
-    FROM streetsearch_log AS s1
-    JOIN (
-        SELECT sid, MAX(ts) AS max_ts
-        FROM streetsearch_log
-        GROUP BY sid
-    ) AS latest ON s1.sid = latest.sid AND s1.ts = latest.max_ts;
-    ");
-    $db_action->execute();
+    $db_action = $conn->query("SHOW TABLES LIKE 'latest_streetsearch'");
+
+    if ($db_action->num_rows == 0) {
+        $db_action = $conn->query("
+        CREATE TABLE latest_streetsearch 
+        AS 
+        SELECT s1.sid, s1.search, s1.ts 
+        FROM streetsearch_log AS s1
+        JOIN (
+            SELECT sid, MAX(ts) AS max_ts
+            FROM streetsearch_log
+            GROUP BY sid
+        ) AS latest ON s1.sid = latest.sid AND s1.ts = latest.max_ts;
+        ");
+
+        if (!$db_action) {
+            error_log("SQL-Fehler beim Erstellen der Tabelle: " . $conn->error);
+        }
+    }
 }
 
 // Funktion um prepare und execute Funktionen einfacher auzuführen

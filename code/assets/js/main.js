@@ -1,39 +1,46 @@
 jQuery(document).ready(function ($) {
-    function loadData(params = {}) {
+    function loadData(sessionID) {
         $.ajax({
             url: 'single.php',
             method: 'POST',
             data: {
                 action: 'get_data',
-                ...params,
+                sessionID: sessionID
             },
             dataType: 'json',
             beforeSend: function () {
-                $('#results tobdy').html('<p>Lädt...</p>');
+                $('#sessionData').html('<p>Lädt...</p>');
+                $('#sessionDetailPopup').fadeIn();
+                $('#sessionDetailPopup').css("display", "flex");
             },
             success: function (response) {
                 console.log(response);
                 if (response && response.success === true) {
-                    $('#results tbody').html(response.html);
+                    $('#sessionData').html(response.html);
                 } else {
-                    $('#results tbody').html('<p>Keine Daten gefunden.</p>');
+                    $('#sessionData').html('<p>Keine Daten gefunden.</p>');
                 }
             },
             error: function () {
-                $('#results tbody').html('<p>Fehler beim Abrufen der Daten.</p>');
+                $('#sessionData').html('<p>Fehler beim Abrufen der Daten.</p>');
             }            
         });
     }
 
-    let sessionIDs = document.querySelectorAll('.sessionID');
-    sessionIDs.forEach(
-        element =>{
-            element.onclick=function(){
-                console.log(element.textContent.trim());
-                loadData({
-                    sessionID: element.textContent.trim()
-                });
-            }
+    $('.sessionID').on('click', function () {
+        let sessionID = $(this).text().trim();
+        loadData(sessionID);
+    });
+
+    // Schließen des Popups beim Klicken auf das "x"
+    $('#closePopup').on('click', function () {
+        $('#sessionDetailPopup').fadeOut();
+    });
+
+    // Schließen des Popups beim Klick außerhalb des Inhalts
+    $(window).on('click', function (event) {
+        if (event.target.id === 'sessionDetailPopup') {
+            $('#sessionDetailPopup').fadeOut();
         }
-    )
+    });
 });
