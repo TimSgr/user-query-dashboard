@@ -19,20 +19,42 @@ if ($_POST !== null && $_POST["action"] == "get_data" && !empty($_POST["sessionI
         echo '</div>';
         echo '<div class="flex justify-center overflow-auto max-h-80">';
         echo '<table class="w-full"><thead><tr class="bg-gray-300 border-b dark:bg-gray-300 dark:border-gray-700 border-gray-200"><th class="w-1/2 px-6 py-4 text-left">Query</th><th class="w-1/2 px-6 py-4 text-left">Zeitstempel</th></tr></thead><tbody>';
-        foreach($all_queries_for_user as $data){ ?>
-        <?php error_log(print_r($data, true)); ?>
+        $i = 0;
+        $prevTimestamp = null;
+        $startTimestamp = null;
+
+        foreach ($all_queries_for_user as $data) {
+            ?>
             <tr class="bg-white border-b dark:bg-white dark:border-gray-700 border-gray-200">
                 <td class="px-6 py-4 w-1/2">
                     <?php echo htmlspecialchars($data["search"]) ?>
                 </td>
                 <td class="px-6 py-4 w-1/2">
-                    <?php echo htmlspecialchars($data["ts"]) ?>
+                    <?php 
+                    $currentTimestamp = new DateTime($data["ts"]);
+                    if ($prevTimestamp) {
+                        $interval = $prevTimestamp->diff($currentTimestamp);
+                        echo '<span class="text-green-600">+' . htmlspecialchars($interval->format('%H:%I:%S.%f')) . ' Sekunden</span>';
+                    } else {
+                        echo htmlspecialchars($data["ts"]);
+                        $startTimestamp = $currentTimestamp;
+                    }
+                    $prevTimestamp = new DateTime($data["ts"]);
+                    ?>
                 </td>
             </tr>
-        <?php
+            <?php
+            $i++;
         }
+        
         echo '</tbody></table>';
         echo '</div>';
+        if ($startTimestamp && $prevTimestamp) {
+            $totalTime = $startTimestamp->diff($prevTimestamp);
+            echo '<div class="text-center mt-4 font-bold">Gesamtzeit der Session: ' . htmlspecialchars($totalTime->format('%H:%I:%S.%f')) . ' Sekunden</div>';
+        }else{
+            echo $startTimestamp;
+        }
         $html = ob_get_clean();
         header('Content-Type: application/json');
         echo json_encode(['success' => true, 'html' => $html]);

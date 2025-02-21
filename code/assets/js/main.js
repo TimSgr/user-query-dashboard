@@ -34,12 +34,10 @@ jQuery(document).ready(function ($) {
     });
     
 
-    // Schließen des Popups beim Klicken auf das "x"
     $('#closePopup').on('click', function () {
         $('#sessionDetailPopup').fadeOut();
     });
 
-    // Schließen des Popups beim Klick außerhalb des Inhalts
     $(window).on('click', function (event) {
         if (event.target.id === 'sessionDetailPopup') {
             $('#sessionDetailPopup').fadeOut();
@@ -77,8 +75,34 @@ jQuery(document).ready(function ($) {
         loadPage(page);
     });
 
-    // Lade die erste Seite beim Laden der Website
+    // Lade die erste Seite beim intitialen Laden der Website
     loadPage(1);
+
+
+    $(document).on('click', '#switcher_section li a', function (event) {
+        event.preventDefault(); //
+    
+        let selectedButton = $(this);
+        let selectedButtonID = selectedButton.attr("id");
+        console.log("Ausgewählt: " + selectedButtonID);
+    
+        let elementSection = "#" + selectedButtonID + "_section";
+        let elementSectionHTML = $(elementSection);
+    
+
+        if (!selectedButton.hasClass("active")) {
+            $('#switcher_section li a').removeClass("active text-blue-600 bg-gray-100 dark:bg-gray-800 dark:text-blue-500")
+            $('#switcher_section li a').addClass("hover:text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 dark:hover:text-gray-300");
+    
+            selectedButton.addClass("active text-blue-600 bg-gray-100 dark:bg-gray-800 dark:text-blue-500")
+            selectedButton.removeClass("hover:text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 dark:hover:text-gray-300");
+    
+            $(".general_data").addClass("hidden").removeClass("active");
+    
+            elementSectionHTML.removeClass("hidden").addClass("active");
+        }
+    });
+    
 });
 
 

@@ -18,6 +18,19 @@ create_latest_search_table($conn);
 
 $per_page = 100;
 
+// SQL Anfrage um Gesamtzahl der session ids zu bekommen
+$total_sessions = execute_query($conn, "
+SELECT COUNT(*) 
+AS total 
+FROM latest_streetsearch
+", true);
+
+//Pagination Variablen
+$current_page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$total_pages = ceil($total_sessions / $per_page);
+$offset = ($current_page - 1) * $per_page;
+$offset = isset($offset) ? (int)$offset : 0;
+
 // Optionale SQL Queries
 $most_searched_query = execute_query($conn, "
 SELECT search 
@@ -50,12 +63,6 @@ $searches = execute_query($conn, "
     LIMIT $per_page OFFSET $offset
 ");
 
-// SQL Anfrage um Gesamtzahl der session ids zu bekommen
-$total_sessions = execute_query($conn, "
-SELECT COUNT(*) 
-AS total 
-FROM latest_streetsearch
-", true);
 
 // SQL Anfrage um Gesamtzahl der queries zu bekommen
 $total_searches = execute_query($conn, "
@@ -64,15 +71,22 @@ AS total
 FROM streetsearch_log
 ", true);
 
+// Durchschnittsanzahl der queries pro Session
 $average_query_per_user = execute_query($conn, "
 SELECT COUNT(*) / COUNT(DISTINCT sid) AS avg_queries_per_user 
 FROM streetsearch_log;
 ", true);
 
-//Pagination Variablen
-$current_page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-$total_pages = ceil($total_sessions / $per_page);
-$offset = ($current_page - 1) * $per_page;
+// Gesamtsuche der Postleitzahlen
+// Durch Zufall herausgefunden, dass man bei SQL auch Regex verwenden kann
+$number_postcodes = execute_query($conn, "
+SELECT COUNT(*) AS total 
+FROM streetsearch_log 
+WHERE search REGEXP '^[0-9]{5}$';
+", true);
+
+
+
 
 // SQL Anfrage um alle Queries für eine User Session zu bekommen
 // Hier wird eine extra prepare und execute funktion erstellt, da es sonst zu sql injection kommen könnte
@@ -81,10 +95,10 @@ function all_queries_for_user($conn, $sessionID){
         SELECT *  
         FROM streetsearch_log 
         WHERE sid = ?
-        ORDER BY ts DESC
+        ORDER BY ts ASC
     ");
     if (!$stmt) {
-        error_log("SQL-Fehler bei prepare(): " . $conn->error);
+        error_log("SQL-Fehler bei prepare all queries for user(): " . $conn->error);
         return [];
     }
     $stmt->bind_param("s", $sessionID);
@@ -112,15 +126,24 @@ function create_latest_search_table($conn)
 
     if ($db_action->num_rows == 0) {
         $db_action = $conn->query("
-        CREATE TABLE latest_streetsearch 
-        AS 
-        SELECT s1.sid, s1.search, s1.ts 
-        FROM streetsearch_log AS s1
-        JOIN (
-            SELECT sid, MAX(ts) AS max_ts
-            FROM streetsearch_log
-            GROUP BY sid
-        ) AS latest ON s1.sid = latest.sid AND s1.ts = latest.max_ts;
+            CREATE TABLE latest_streetsearch 
+            AS 
+            SELECT 
+                s1.sid, 
+                s1.search, 
+                s1.ts,
+                search_count.total_searches
+            FROM streetsearch_log AS s1
+            JOIN (
+                SELECT sid, COUNT(*) AS total_searches
+                FROM streetsearch_log
+                GROUP BY sid
+            ) AS search_count ON s1.sid = search_count.sid
+            JOIN (
+                SELECT sid, MAX(ts) AS max_ts
+                FROM streetsearch_log
+                GROUP BY sid
+            ) AS latest ON s1.sid = latest.sid AND s1.ts = latest.max_ts
         ");
 
         if (!$db_action) {
@@ -135,7 +158,7 @@ function execute_query($mysql_connection, $query, $single_value = false)
     $stmt = $mysql_connection->prepare($query);
 
     if (!$stmt) {
-        error_log("SQL-Fehler: bei prepare(): " . $mysql_connection->error);
+        error_log("SQL-Fehler: bei prepare(): " . "query:". $query . $mysql_connection->error);
         return $single_value ? null : [];
     }
 

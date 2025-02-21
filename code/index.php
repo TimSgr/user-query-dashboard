@@ -42,6 +42,7 @@ function render_single_search_result($session_id, $search_query, $timestamp){
     <!-- TODO: Taildwind shouldnt be loaded full -->
     <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <div class="flex flex-col gap-4 p-4 justify-center items-center">
         <h2 class="text-center text-2xl font-bold">User Query Übersicht</h2>
         <p class="text-center text-xl">
@@ -49,10 +50,23 @@ function render_single_search_result($session_id, $search_query, $timestamp){
         </p>
         <hr class="w-1/3 text-center"></hr>
     </div>
-    <div class="general_data flex gap-4 justify-center p-4">
+
+    <div class="flex gap-4 justify-center p-4 w-1/3 m-auto" id="switcher_section">
+        <ul class="flex text-sm w-full font-medium text-center text-gray-500 border-b border-gray-200 dark:border-gray-700 dark:text-gray-400">
+            <li class="me-2 w-1/2">
+                <a href="#" aria-current="active" class="w-full inline-block p-4 text-blue-600 bg-gray-100 rounded-t-lg active dark:bg-gray-800 dark:text-blue-500" id="plain">Plain Text</a>
+            </li>
+            <li class="me-2 w-1/2">
+                <a href="#" aria-current="inactive" class="w-full inline-block p-4 rounded-t-lg hover:text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 dark:hover:text-gray-300" id="visual">Visuell</a>
+            </li>
+        </ul>
+    </div>
+    <div class="general_data flex gap-4 justify-center p-4" id="plain_section">
         <div class="amount_queries flex flex-col justify-center text-center">
             <h2>Gesamte Suchanfragen:</h2>
-            <p><?php echo htmlspecialchars($total_searches); ?></p>
+            <p id="full_search_amount"><?php echo htmlspecialchars($total_searches); ?></p>
+            <h2 class="mt-4">Davon nach Postleitzahl</h2> 
+            <p id="postcode_search_amount"><?php echo htmlspecialchars($number_postcodes); ?></p>
         </div>
         <div class="max_queries_user"></div>
         <div class="average_queries_user flex flex-col justify-center text-center">
@@ -64,6 +78,11 @@ function render_single_search_result($session_id, $search_query, $timestamp){
             <p>"<?php echo htmlspecialchars(trim($most_searched_query)); ?>" wurde <?php echo htmlspecialchars($most_searched_query_amount); ?> mal gesucht</p>
         </div>
     </div>
+    <div class="general_data flex hidden gap-4 justify-center p-4 m-auto" id="visual_section">
+        <canvas id="myChart" style="width:100%;max-width:600px; max-height: 200px;"></canvas>
+    </div>
+    
+
     <div class="table_wrapper relative overflow-x-auto">
         <table id="results" class="table-auto w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
             <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
@@ -71,6 +90,7 @@ function render_single_search_result($session_id, $search_query, $timestamp){
                     <th scope="col" class="px-6 py-3">Session ID</th>
                     <th scope="col" class="px-6 py-3">Search Query</th>
                     <th scope="col" class="px-6 py-3">Timestamp</th>
+                    <th scope="col" class="px-6 py-3">Anfragen</th>
                     <th scope="col" class="px-6 py-3"></th>
                 </tr>
             </thead>
@@ -94,6 +114,7 @@ function render_single_search_result($session_id, $search_query, $timestamp){
         </div>
     </div>
     <script src="/assets/js/main.js" asp-append-version="true"></script>
+    <script src="/assets/js/charts.js" asp-append-version="true"></script>
 </body>
 </html>
 <?php

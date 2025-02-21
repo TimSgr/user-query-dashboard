@@ -4,6 +4,43 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <style>
+        *{
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+        body{
+            max-width: 800px;
+            width: auto;
+            display: flex;
+            justify-content: center;
+            flex-direction: column;
+            margin: auto;
+        }
+        .techstack{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            flex-direction: column;
+        }
+        h1{
+            text-align: center;
+            text-decoration: underline;
+        }
+        .techstack > ul > li{
+            margin: 10px 0px;
+        }
+        .subheadline{
+            margin: 0;
+            padding: 0;
+        }
+        .steps{
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            font-size: 16px;
+        }
+    </style>
 </head>
 <body>
     <h1>
@@ -14,24 +51,138 @@
         Grundlegende Überlegungen
     </h2>
     <h3>
-        Welchen Techstack möchte ich nutzen?
+        1. Welchen Techstack möchte ich nutzen?
     </h3>
-    <p>Ich habe mich hier für folgenden Stack entschieden</p>
-    <ul>
-        <li>
-            Docker für das Bereitstellen einer Weboberfläche
-            <ul>
-                <li>
-                    Docker ist skalierbar
-                </li>
-                <li>
-                    Das Aufsetzen ist schnell und man stellt sicher, dass der Code
-                </li>
-            </ul>
-        </li>
-        <li>
+    <p class="subheadline"><b>Ich habe mich hier für folgenden Stack entschieden</b></p>
+    <div class="techstack">
+        <ul>
+            <li>
+                Docker für das Bereitstellen einer Weboberfläche
+                <ul>
+                    <li>
+                        Docker ist skalierbar
+                    </li>
+                    <li>
+                        Das Aufsetzen ist schnell und man stellt sicher, dass der Code auf jedem Gerät gehostet werden kann ohne große Abhängigkeiten
+                    </li>
+                    <li>
+                        public images für die datenbank und den webserver können genutzt werden
+                    </li>
+                    <li>
+                        public images für die mysql datenbank und den webserver können genutzt werden
+                    </li>
+                    <li>
+                        Änderungen sind nach einem einfachen Reload sofort sichtbar durch volumes
+                    </li>
+                </ul>
+            </li>
+            <li>
+                natives PHP mit mysqli Erweiterung
+                <ul>
+                    <li>
+                        Ich habe mich gegen ein Framework entschieden da die Aufgabe nur "simple" SQL Queries braucht. Und die Erweiterung Mysqli dafür komplett ausreicht
+                    </li>
+                </ul>
+            </li>
+            <li>
+                Nginx als Webserver
+                <ul>
+                    <li>
+                        Nutze ich immer gerne für meine privaten Projekte. Das ist also rein persönliche Präferenz, Apache würde sich auch eher lohnen wenn das ganze Projekt später auf z.b. einem Raspberry Pi gestartet wird.
+                    </li>
+                </ul>
+            </li>
+            <li>
+                Tailwind CSS als Tool
+                <ul>
+                    <li>
+                        Man hätte die Aufgabe auch mit CSS selbst lösen können, aber da die Zeit auf max 2 Arbeitstage begrenzt war und ich nicht viel Zeit in das Styling stecken wollte habe ich das so gelöst.
+                    </li>
+                </ul>
+            </li>
+            <li>
+                jQuery und natives Javascript
+                <ul>
+                    <li>
+                        Um Pagination ohne Seitenreload zu ermöglichen bei Ansicht der Userdaten und zum Anzeigen der Detail Queries für eine bestimmte Session
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+    <h3>
+        2. Wie sieht die Grundlegende Funktionsweise aus für die Query Übersicht?
+    </h3>
+    <img src="./assets/images/Process.png">
 
-        </li>
-    </ul>
+    <h2>
+        Vorgehensweise
+    </h2>
+    <div class="steps">
+        <span>
+            1. Docker Container gestartet kommen
+        </span>
+        <span>
+            1.1 Images für nginx und mysql rausgesucht -> mysql 5.7 genommen weil ich in vergangenheit immer Probleme hatte mit den neuen Versionen und ich nicht etwas entwickel was später von Kunden genutzt wird.
+        </span>
+        <span>
+            1.2 Versucht den mysql dump zu importieren -> gab einen fehler weil die credentials nicht richtig waren... </br> 
+            Fehler: credentials für die datenbank waren beim ersten starten schon gesetzt und nachträgliche Änderungen der credentials wurden erst nach neustart der container übernommen</br>
+            Lösung: datenbank container killen und neustarten
+        </span> 
+        <span>
+            1.3 Überprüft ob Datensätze vorhanden sind nach import ✅
+            <img src="./assets/images/database_success.png" width="600" />
+        </span>
+        <span>
+            1.4 Erste SQL Queries bauen und schauen ob die Daten damit auch gezogen werden können </br>
+            Fehler: mysqli war nicht installiert da ich das vergessen ahbe
+            Lösung: hinzufügen als extension im Dockerfile, nochmal docker build . ausführen
+        </span>
+        <span>
+            1.5: 2nd Try SQL Query ( SELECT COUNT(*) )</br>
+            -> gesehen wie groß die tabelle ist und erstmal ein limit hinzugefügt bei ( SELECT * ) command um zu prüfen welche daten alle wie angeordnet sind (spaltennamen, formate, etc)</br>
+            -> erste tabelle mit allen werten angezeigt
+        </span>
+        <span>
+            2. Aufgabenstellung nochmal gelesen um Anwedungsfall richtig zu verstehen </br>
+            -> realisiert, dass ich gar nicht alle Anfragen in einer Tabelle haben möchte sondern nur alle Session IDs und die letzte Query </br>
+            -> log tabelle viel zu groß um da nach unique session ids zu filtern </br>
+            -> Lösung: zweite Tabelle erstellen die nur die session id, den letzten timestamp und die letzte anfrage beinhaltet </br>
+            -> Es wird trotzdem möglich sein ohne Probleme alle user queries für eine session id zu bekommen da diese in beiden tables auftaucht. </br>
+        </span>
+        <span>
+            2.1 zweite Tabelle erstellt und dort erste Queries ausgeführt </br>
+            -> Probleme mit Join statement von log tabelle auf neue tabelle </br>
+            -> nach debugging problem gefunden -> brauchte AS Statement um die Values richtig zu mounten</br>
+            -> zweite tabelle steht und daten können angezeigt werden </br>
+            -> tabelle so schon sehr unschön aus -> kurzer Fokus aufs Styling und von flowbite tabellenvorlage genommen
+        </span>
+        <span>
+            3. Ajax zum Anzeigen von einzelnen Sessions nutzen </br>
+            -> jquery.min.js file eingebunden -> kann evt noch lokal hinzugefügt werden und nicht über cdn </br>
+            -> jQuery genutzt um simple ajax anfrage laufen zu lassen und response auszuwerten </br>
+            -> hat direkt geklappt, response kam zurück
+        </span>
+        <span>
+            3.1 single.php file erstellen um bestimmte datensätze/table rows zurückzugeben </br>
+            -> 2 getrennte files bei denen ich beide die gleiche db verbindung brauche und ähnliche funktionen </br>
+            -> db verbindung, default queries und execute_query methode in seperate datei ausgelagert und diese bei index und single inkludiert </br>
+            -> db verbindung hat auch geklappt
+        </span>
+        <span>
+            3.2 richtige datensätze übergeben nach js um dort die daten zu verarbeiten und anzuzeigen </br>
+            -> direkt html struktur mit den daten übergeben da bauen der table rows in js komplizierter gewesen wäre
+        </span>
+        <span>
+            3.3 testing für single session </br>
+            -> daten in dem tabellen body werden ersetzt, um wieder alle daten zu sehen muss ein reload erfolgen </br>
+            -> sehr anwenderunfreundlich </br>
+            -> Idee: Popup
+        </span>
+        <span>
+            3.4 Popup erstellen und Daten zugänglich machen </br>
+        </span>
+    </div>
 </body>
 </html>

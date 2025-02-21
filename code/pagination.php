@@ -1,7 +1,7 @@
 <?php
 require_once "database_connection.php";
 
-function render_single_search_result($session_id, $search_query, $timestamp){
+function render_single_search_result($session_id, $search_query, $timestamp, $total_searches){
     ob_start();
     ?>
     <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200">
@@ -13,6 +13,9 @@ function render_single_search_result($session_id, $search_query, $timestamp){
         </td>
         <td class="px-6 py-4">
             <?php echo htmlspecialchars($timestamp) ?>
+        </td>
+        <td class="px-6 py-4">
+            <?php echo htmlspecialchars($total_searches) ?>
         </td>
         <td class="px-6 py-4">
             <button class="bg-blue-500 sessionID hover:bg-blue-700 cursor-pointer text-white font-bold py-2 px-4 rounded-full" value="<?php echo $session_id ?>">    
@@ -41,7 +44,7 @@ $total_pages = ceil($total_sessions / $per_page);
 
 ob_start();
 foreach ($searches as $search) {
-    echo render_single_search_result($search["sid"], $search["search"], $search["ts"]);
+    echo render_single_search_result($search["sid"], $search["search"], $search["ts"], $search["total_searches"]);
 }
 $table_html = ob_get_clean();
 
