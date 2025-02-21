@@ -39,6 +39,7 @@ function render_single_search_result($session_id, $search_query, $timestamp){
     <title>Suchstatistik</title>
 </head>
 <body>
+    <!-- TODO: Taildwind shouldnt be loaded full -->
     <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <div class="flex flex-col gap-4 p-4 justify-center items-center">
@@ -83,7 +84,6 @@ function render_single_search_result($session_id, $search_query, $timestamp){
         </table>
     </div>
     <div class="pagination-controls"></div>
-    <script src="/assets/js/main.js" asp-append-version="true"></script>
     <div id="sessionDetailPopup" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden justify-center items-center z-50">
         <div class="bg-white rounded-lg shadow-lg w-4/5 p-6 relative">
             <button id="closePopup" class="absolute top-3 right-3 text-gray-600 hover:text-gray-900 text-4xl cursor-pointer">&times;</button>
@@ -93,7 +93,7 @@ function render_single_search_result($session_id, $search_query, $timestamp){
             </div>
         </div>
     </div>
-
+    <script src="/assets/js/main.js" asp-append-version="true"></script>
 </body>
 </html>
 <?php

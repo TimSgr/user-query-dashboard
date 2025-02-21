@@ -45,23 +45,19 @@ foreach ($searches as $search) {
 }
 $table_html = ob_get_clean();
 
-// Pagination-Steuerung
-// Pagination-Steuerung
 $pagination_html = "<div class='flex justify-center space-x-2 p-4 overflow-auto'>";
 
 if ($page > 1) {
     $pagination_html .= "<button class='pagination-btn px-4 py-2 bg-blue-500 text-white rounded' data-page='" . ($page - 1) . "'>&laquo; Vorherige</button>";
 }
 
-$range = 2; // Anzahl der direkt sichtbaren Seiten links und rechts der aktuellen Seite
+$range = 5;
 
-// Erste Seite immer anzeigen
 if ($page > 1 + $range) {
     $pagination_html .= "<button class='pagination-btn px-4 py-2 bg-gray-300 rounded' data-page='1'>1</button>";
     $pagination_html .= "<span class='px-2 py-2'>...</span>";
 }
 
-// Bereich um die aktuelle Seite
 $start = max(1, $page - $range);
 $end = min($total_pages, $page + $range);
 
@@ -70,7 +66,6 @@ for ($i = $start; $i <= $end; $i++) {
     $pagination_html .= "<button class='pagination-btn px-4 py-2 $active rounded' data-page='$i'>$i</button>";
 }
 
-// Letzte Seite immer anzeigen
 if ($page < $total_pages - $range) {
     $pagination_html .= "<span class='px-2 py-2'>...</span>";
     $pagination_html .= "<button class='pagination-btn px-4 py-2 bg-gray-300 rounded' data-page='$total_pages'>$total_pages</button>";
