@@ -20,9 +20,6 @@ function render_single_search_result($session_id, $search_query, $timestamp){
         <td class="px-6 py-4">
             <?php echo htmlspecialchars($timestamp) ?>
         </td>
-        <td class="px-6 py-4">
-            <?php echo htmlspecialchars($timestamp) ?>
-        </td>
     </tr>
     <?php
     return ob_get_clean();
@@ -63,7 +60,6 @@ function render_single_search_result($session_id, $search_query, $timestamp){
                     <th scope="col" class="px-6 py-3">Session ID</th>
                     <th scope="col" class="px-6 py-3">Search Query</th>
                     <th scope="col" class="px-6 py-3">Timestamp</th>
-                    <th scope="col" class="px-6 py-3"></th>
                 </tr>
             </thead>
             <tbody>
