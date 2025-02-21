@@ -11,7 +11,7 @@ function render_single_search_result($session_id, $search_query, $timestamp){
     ob_start();
     ?>
     <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200">
-        <td class="px-6 py-4 sessionID cursor-pointer underline">
+        <td class="px-6 py-4">
             <?php echo htmlspecialchars($session_id) ?>
         </td>
         <td class="px-6 py-4">
@@ -19,6 +19,11 @@ function render_single_search_result($session_id, $search_query, $timestamp){
         </td>
         <td class="px-6 py-4">
             <?php echo htmlspecialchars($timestamp) ?>
+        </td>
+        <td class="px-6 py-4">
+            <button class="bg-blue-500 sessionID hover:bg-blue-700 cursor-pointer text-white font-bold py-2 px-4 rounded-full" value="<?php echo $session_id ?>">    
+                Verlauf
+            </button>
         </td>
     </tr>
     <?php
@@ -60,6 +65,7 @@ function render_single_search_result($session_id, $search_query, $timestamp){
                     <th scope="col" class="px-6 py-3">Session ID</th>
                     <th scope="col" class="px-6 py-3">Search Query</th>
                     <th scope="col" class="px-6 py-3">Timestamp</th>
+                    <th scope="col" class="px-6 py-3"></th>
                 </tr>
             </thead>
             <tbody>

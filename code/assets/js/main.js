@@ -28,7 +28,7 @@ jQuery(document).ready(function ($) {
     }
 
     $('.sessionID').on('click', function () {
-        let sessionID = $(this).text().trim();
+        let sessionID = $(this).val().trim();
         loadData(sessionID);
     });
 
