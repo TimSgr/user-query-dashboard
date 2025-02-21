@@ -14,7 +14,7 @@ if ($_POST !== null && $_POST["action"] == "get_data" && !empty($_POST["sessionI
         error_log(print_r($all_queries_for_user, true));
         ob_start();
         echo '<div class="flex flex-col p-2">';
-        echo '<h2 class="font-bold text-xl text-center">Query Verlauf für <span>' . $_POST["sessionID"] . '</span></h2>';
+        echo '<h2 class="font-bold text-xl text-center">Query Verlauf für <span class="truncate break-all text-wrap">' . $_POST["sessionID"] . '</span></h2>';
         echo '<p class="text-center">Gesamanzahl Anfragen der Session: ' . count($all_queries_for_user) . '</p>';
         echo '</div>';
         echo '<div class="flex justify-center overflow-auto max-h-80">';

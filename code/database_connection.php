@@ -15,7 +15,8 @@ if ($conn->connect_error) {
 create_latest_search_table($conn);
 
 // Default per page Value damit search queries funktionieren
-$per_page = 50;
+
+$per_page = 100;
 
 // Optionale SQL Queries
 $most_searched_query = execute_query($conn, "
@@ -43,11 +44,11 @@ DESC LIMIT 1", true);
 
 // Haupt SQL Anfrage um Daten in der Tabelle verfügbar zu machen
 $searches = execute_query($conn, "
-SELECT * 
-FROM latest_streetsearch 
-AS s1 
-ORDER BY ts DESC
-LIMIT " . (int)$per_page);
+    SELECT * 
+    FROM latest_streetsearch 
+    ORDER BY ts DESC
+    LIMIT $per_page OFFSET $offset
+");
 
 // SQL Anfrage um Gesamtzahl der session ids zu bekommen
 $total_sessions = execute_query($conn, "
@@ -62,6 +63,16 @@ SELECT COUNT(*)
 AS total 
 FROM streetsearch_log
 ", true);
+
+$average_query_per_user = execute_query($conn, "
+SELECT COUNT(*) / COUNT(DISTINCT sid) AS avg_queries_per_user 
+FROM streetsearch_log;
+", true);
+
+//Pagination Variablen
+$current_page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$total_pages = ceil($total_sessions / $per_page);
+$offset = ($current_page - 1) * $per_page;
 
 // SQL Anfrage um alle Queries für eine User Session zu bekommen
 // Hier wird eine extra prepare und execute funktion erstellt, da es sonst zu sql injection kommen könnte
@@ -93,11 +104,6 @@ function all_queries_for_user($conn, $sessionID){
     return $data;
 }
 
-
-// Pagination Variables
-$current_page = 1;
-$total_pages = ceil($total_sessions / $per_page);
-$offset = ($current_page - 1) * $per_page;
 
 // Funktion um eine neue Tabelle zu erstellen für die latest query strings bei der suche
 function create_latest_search_table($conn)

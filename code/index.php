@@ -39,6 +39,8 @@ function render_single_search_result($session_id, $search_query, $timestamp){
     <title>Suchstatistik</title>
 </head>
 <body>
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <div class="flex flex-col gap-4 p-4 justify-center items-center">
         <h2 class="text-center text-2xl font-bold">User Query Übersicht</h2>
         <p class="text-center text-xl">
@@ -46,13 +48,16 @@ function render_single_search_result($session_id, $search_query, $timestamp){
         </p>
         <hr class="w-1/3 text-center"></hr>
     </div>
-    <div class="general_data flex gap-4 justify-center">
+    <div class="general_data flex gap-4 justify-center p-4">
         <div class="amount_queries flex flex-col justify-center text-center">
             <h2>Gesamte Suchanfragen:</h2>
             <p><?php echo htmlspecialchars($total_searches); ?></p>
         </div>
         <div class="max_queries_user"></div>
-        <div class="average_queries_user"></div>
+        <div class="average_queries_user flex flex-col justify-center text-center">
+            <h2>Ø Suchanfragen pro Nutzer:</h2>
+            <p><?php echo htmlspecialchars(str_replace(".", ",", $average_query_per_user)); ?></p>
+        </div>
         <div class="most_searched_query flex flex-col justify-center text-center">
             <h2>Most searched query:</h2>
             <p>"<?php echo htmlspecialchars(trim($most_searched_query)); ?>" wurde <?php echo htmlspecialchars($most_searched_query_amount); ?> mal gesucht</p>
@@ -77,33 +82,7 @@ function render_single_search_result($session_id, $search_query, $timestamp){
             </tbody>
         </table>
     </div>
-    <?php
-
-    echo "<div class='pagination-controls'>";
-    if ($current_page > 1) {
-        echo "<button class='pagination-btn' data-page='" . ($current_page - 1) . "'>&laquo; Vorherige</button>";
-    } else {
-        echo "<button class='pagination-btn' disabled>&laquo; Vorherige</button>";
-    }
-
-    $range = 2;
-    $start = max(1, $current_page - $range);
-    $end = min($total_pages, $current_page + $range);
-
-    for ($i = $start; $i <= $end; $i++) {
-        $active = ($i == $current_page) ? 'active' : '';
-        echo "<button class='pagination-btn $active' data-page='$i'>$i</button>";
-    }
-
-    if ($current_page < $total_pages) {
-        echo "<button class='pagination-btn' data-page='" . ($current_page + 1) . "'>Nächste &raquo;</button>";
-    } else {
-        echo "<button class='pagination-btn' disabled>Nächste &raquo;</button>";
-    }
-    echo "</div>";
-    ?>
-    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <div class="pagination-controls"></div>
     <script src="/assets/js/main.js" asp-append-version="true"></script>
     <div id="sessionDetailPopup" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden justify-center items-center z-50">
         <div class="bg-white rounded-lg shadow-lg w-4/5 p-6 relative">
